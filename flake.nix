@@ -21,11 +21,15 @@
     let
       pkgs = nixpkgs.legacyPackages.${system};
       pname = "wbg"; #package name
-      version = "0.0.1";
+      version = "1.3.0";
       src = ./.;
       buildInputs = with pkgs; [
         # add library dependencies here i.e.
-        #zlib
+        libjpeg
+        pixman
+        tllist
+        wayland
+        wayland-protocols
         # Tipp: you can use `nix-locate foo.h` to find the package that provides a header file, see https://github.com/nix-community/nix-index
       ];
       nativeBuildInputs = with pkgs; [
@@ -41,6 +45,7 @@
         # clangd language server.
         # Also start your IDE/editor from the shell provided by `nix develop` as the wrapped clangd from clang-tools needs environment variables set by the shell
         #clang-tools
+        wayland-scanner
       ];
     in
     {
@@ -48,7 +53,7 @@
         inherit buildInputs nativeBuildInputs;
 
         # You can use NIX_CFLAGS_COMPILE to set the default CFLAGS for the shell
-        #NIX_CFLAGS_COMPILE = "-g -O1";
+        NIX_CFLAGS_COMPILE = "-O1 -DWBG_VERSION=\"${version}\"";
         # You can use NIX_LDFLAGS to set the default linker flags for the shell
         #NIX_LDFLAGS = "-L${lib.getLib zstd}/lib -lzstd";
       };
