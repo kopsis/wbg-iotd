@@ -48,7 +48,7 @@
         inherit buildInputs nativeBuildInputs;
 
         # You can use NIX_CFLAGS_COMPILE to set the default CFLAGS for the shell
-        #NIX_CFLAGS_COMPILE = "-g";
+        NIX_CFLAGS_COMPILE = "-g -O1";
         # You can use NIX_LDFLAGS to set the default linker flags for the shell
         #NIX_LDFLAGS = "-L${lib.getLib zstd}/lib -lzstd";
       };
