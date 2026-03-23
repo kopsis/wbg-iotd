@@ -20,7 +20,7 @@
     flake-utils.lib.eachDefaultSystem (system:
     let
       pkgs = nixpkgs.legacyPackages.${system};
-      pname = "hello-world"; #package name
+      pname = "wbg"; #package name
       version = "0.0.1";
       src = ./.;
       buildInputs = with pkgs; [
@@ -48,7 +48,7 @@
         inherit buildInputs nativeBuildInputs;
 
         # You can use NIX_CFLAGS_COMPILE to set the default CFLAGS for the shell
-        NIX_CFLAGS_COMPILE = "-g -O1";
+        #NIX_CFLAGS_COMPILE = "-g -O1";
         # You can use NIX_LDFLAGS to set the default linker flags for the shell
         #NIX_LDFLAGS = "-L${lib.getLib zstd}/lib -lzstd";
       };
@@ -65,6 +65,9 @@
 
       packages.default = pkgs.stdenv.mkDerivation {
         inherit buildInputs nativeBuildInputs pname version src;
+        installPhase = ''
+          install -m755 -D ./wbg $out/bin/wbg
+        '';
       };
     });
 }
