@@ -2,7 +2,7 @@
   description = "C Template";
 
   inputs = {
-    nixpkgs.url = "nixpkgs";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
     systems.url = "github:nix-systems/x86_64-linux";
     flake-utils = {
       url = "github:numtide/flake-utils";
@@ -31,7 +31,7 @@
       nativeBuildInputs = with pkgs; [
         # add build dependencies here
         ## For mesonbuild:
-        #meson ninja
+        meson ninja
         ## For cmake:
         #cmake
         ## For autotools:
