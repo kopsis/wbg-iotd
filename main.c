@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 #include <sys/signalfd.h>
@@ -24,6 +25,7 @@
 #define LOG_ENABLE_DBG 0
 #include "log.h"
 #include "shm.h"
+#include "iotd.h"
 #include "wbg-features.h"
 
 #if defined(WBG_HAVE_PNG)
@@ -41,6 +43,8 @@
 #if defined(WBG_HAVE_JXL)
  #include "jxl.h"
 #endif
+
+#define WP_DIR ".local/share/wallpaper"
 
 /* Source image */
 static const char *image_path = NULL;
@@ -76,6 +80,9 @@ struct output {
 static tll(struct output) outputs;
 
 static bool stretch = false;
+
+/* Last image fetch datetime */
+static struct tm image_dt = { .tm_year = 0, .tm_yday = 0 };
 
 static pixman_image_t *
 load_image(void)
@@ -459,6 +466,37 @@ version_and_features(void)
     return buf;
 }
 
+bool
+newday(void)
+{
+    time_t now;
+    struct tm now_dt;
+
+    now = time(NULL);
+    if (localtime_r(&now, &now_dt) != 0) {
+        if (now_dt.tm_year != image_dt.tm_year ||
+            now_dt.tm_yday != image_dt.tm_yday) {
+            return true;
+        }
+    }
+    else {
+        LOG_ERRNO("Failed to get localtime");
+    }
+
+    return false;
+}
+
+void
+setday(void)
+{
+    time_t now;
+
+    now = time(NULL);
+    if (localtime_r(&now, &image_dt) == 0) {
+        LOG_ERRNO("Failed to get localtime");
+    }
+}
+
 int
 main(int argc, char *const *argv)
 {
@@ -577,7 +615,7 @@ main(int argc, char *const *argv)
             {.fd = wl_display_get_fd(display), .events = POLLIN},
             {.fd = sig_fd, .events = POLLIN},
         };
-        int ret = poll(fds, sizeof(fds) / sizeof(fds[0]), -1);
+        int ret = poll(fds, sizeof(fds) / sizeof(fds[0]), 10000);
 
         if (ret < 0) {
             if (errno == EINTR)
@@ -585,6 +623,18 @@ main(int argc, char *const *argv)
 
             LOG_ERRNO("failed to poll");
             break;
+        }
+
+        /* Handle timeout */
+        if (ret == 0) {
+            if (newday()) {
+                LOG_INFO("Fetch new wallpaper");
+                if (iotd_get(SVC_BING, WP_DIR) == 0) {
+                    LOG_INFO("Got wallpaper");
+                    setday();
+                }
+            }
+            continue;
         }
 
         if (fds[0].revents & POLLHUP) {

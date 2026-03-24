@@ -25,6 +25,7 @@
       src = ./.;
       buildInputs = with pkgs; [
         # add library dependencies here i.e.
+        curl
         libjpeg
         pixman
         tllist
@@ -70,6 +71,7 @@
 
       packages.default = pkgs.stdenv.mkDerivation {
         inherit buildInputs nativeBuildInputs pname version src;
+        NIX_CFLAGS_COMPILE = "-O1 -DWBG_VERSION=\"${version}\"";
         installPhase = ''
           install -m755 -D ./wbg $out/bin/wbg
         '';
