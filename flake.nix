@@ -25,6 +25,7 @@
       src = ./.;
       buildInputs = with pkgs; [
         # add library dependencies here i.e.
+        cjson
         curl
         libjpeg
         pixman

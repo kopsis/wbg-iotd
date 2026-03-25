@@ -44,7 +44,7 @@
  #include "jxl.h"
 #endif
 
-#define WP_DIR ".local/share/wallpaper"
+#define WP_DIR "/tmp/"
 
 /* Source image */
 static const char *image_path = NULL;

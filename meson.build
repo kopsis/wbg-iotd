@@ -16,6 +16,7 @@ add_project_arguments(
   language: 'c',
 )
 
+cjson = dependency('libcjson')
 curl = dependency('libcurl')
 pixman = dependency('pixman-1')
 jpg = dependency('libjpeg')
@@ -64,5 +65,5 @@ executable(
     'iotd.c', 'iotd.h',
     image_format_sources,
     wl_proto_src + wl_proto_headers, 
-    dependencies: [curl, pixman, jpg, wayland_client, tllist],
+    dependencies: [curl, cjson, pixman, jpg, wayland_client, tllist],
     install: true)
