@@ -1,39 +1,173 @@
 #include "file.h"
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fts.h>
 #include <sys/stat.h>
 
+#define LOG_MODULE "file"
+#define LOG_ENABLE_DBG 1
+#include "log.h"
 
-int descending(const FTSENT * const *a, const FTSENT * const *b)
+
+struct FileName {
+    char* name;
+    struct FileName* next;
+};
+
+int descending(const FTSENT **a, const FTSENT **b)
 {
-    if (a->fts_statp->st_ctime > b->fts_statp->st_ctime) return 1;
+    if ((*a)->fts_statp->st_ctime < (*b)->fts_statp->st_ctime) return 1;
     else return -1;
 }
 
-FTS*
-getdir(const char* path)
+int
+getdir(char* path, struct FileName* const list)
 {
-    char* pathlist[2] = { dirlist, NULL };
+    struct FileName* curr = list;
+    struct FileName* next = NULL;
+    FTSENT* file = NULL;
 
-    return fts_open(pathlist, FTS_NOCHDIR, descending);
+    char* pathlist[2] = { path, NULL };
+
+    int pathlen = strlen(path);
+
+    if (path[pathlen - 1] == '/') {
+        path[pathlen - 1] = '\0';
+    }
+    LOG_DBG("fts_open(%s)", pathlist[0]);
+    FTS* files = fts_open(pathlist, FTS_NOCHDIR, descending);
+    if (files == NULL) {
+        LOG_ERRNO("fts_open(%s) failed", path);
+        return 0;
+    }
+    file = fts_read(files);
+    file = fts_children(files, 0);
+    
+    int count = 0;
+    while (file != NULL) {
+        curr->name = malloc(file->fts_namelen + 1);
+        if (curr->name == NULL) {
+            LOG_ERR("Failed to allocate memory for file name");
+            break;
+        }
+        strncpy(curr->name, file->fts_name, file->fts_namelen);
+        LOG_DBG("File %d: %s", count, curr->name);
+        next = malloc(sizeof(struct FileName));
+        if (next == NULL) {
+            LOG_ERR("Failed to allocate memory for file list entry");
+            break;
+        }
+        next->name = NULL;
+        next->next = NULL;
+        curr->next = next;
+        curr = next;
+        file = file->fts_link;
+        count++;
+    }
+
+    strcat(path, "/");
+
+    LOG_DBG("Closing FTS");
+    fts_close(files);
+    LOG_DBG("Found %d files", count);
+    return count;
 }
 
-int
-next_file(const int current, char* path)
+void
+free_names_recurse(struct FileName* file)
 {
-    FTS* dir = getdir(path);
-    if (current >= 0) {
-        current += 1;
-        if (current > ?) {
-            current = 0;
+    if (file) {
+        free_names_recurse(file->next);
+        if (file->name) {
+            LOG_DBG("Freeing name %s", file->name);
+            free(file->name);
         }
+        free(file);
     }
 }
 
-int
-prev_file(const int current, char* path)
+char*
+next_file(int* const current, char* path)
 {
-    FTS* dir = getdir(path);
+    struct FileName* files = malloc(sizeof(struct FileName));
+    if (files == NULL) {
+        LOG_ERR("Failed allocating memory for file name entry");
+        return NULL;
+    }
+
+    files->name = NULL;
+    files->next = NULL;
+
+    int numfiles = getdir(path, files);
+    if (numfiles <= 0) {
+        /* no files or other error */
+        *current = 0;
+        return NULL;
+    }
+
+    if (*current >= numfiles || *current < 0) {
+        *current = 0;
+    }
+    else {
+        *current = *current + 1;
+    }
+
+    LOG_DBG("Current file: %d", *current);
+    LOG_DBG("Current file name: %s", files[*current].name);
+    char* name = malloc(strlen(files[*current].name) + 1);
+    if (name == NULL) {
+        LOG_ERR("Failed allocating memory for file name");
+    }
+    else {
+        strcpy(name, files[*current].name);
+    }
+
+    LOG_DBG("Freeing filename list");
+    free_names_recurse(files);
+
+    return name;
+}
+
+char*
+prev_file(int* const current, char* path)
+{
+    struct FileName* files = malloc(sizeof(struct FileName));
+    if (files == NULL) {
+        LOG_ERR("Failed allocating memory for file name entry");
+        return NULL;
+    }
+
+    files->name = NULL;
+    files->next = NULL;
+
+    int numfiles = getdir(path, files);
+    if (numfiles <= 0) {
+        /* no files or other error */
+        *current = 0;
+        return NULL;
+    }
+
+    if (*current == 0) {
+        *current = numfiles - 1;
+    }
+    else {
+        *current = *current - 1;
+    }
+
+    LOG_DBG("Current file: %d", *current);
+    LOG_DBG("Current file name: %s", files[*current].name);
+    char* name = malloc(strlen(files[*current].name));
+    if (name == NULL) {
+        LOG_ERR("Failed allocating memory for file name");
+    }
+    else {
+        strcpy(name, files[*current].name);
+    }
+
+    LOG_DBG("Freeing filename list");
+    free_names_recurse(files);
+
+    return name;
 }
 

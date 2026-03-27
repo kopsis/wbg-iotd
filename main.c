@@ -26,6 +26,7 @@
 #include "log.h"
 #include "shm.h"
 #include "iotd.h"
+#include "file.h"
 #include "wbg-features.h"
 
 #if defined(WBG_HAVE_PNG)
@@ -47,8 +48,10 @@
 #define WP_DIR "/tmp/"
 
 /* Source image */
-static const char *image_path = NULL;
+static char *image_dir_path = NULL;
+static char *image_path = NULL;
 static FILE *fp = NULL;
+static int current = -1;
 
 /* Top-level globals */
 static struct wl_display *display;
@@ -541,12 +544,17 @@ main(int argc, char *const *argv)
         return EXIT_FAILURE;
     }
 
-    image_path = argv[argc - 1];
+    image_dir_path = argv[argc - 1];
     stretch = (argc == 3);
 
     log_init(LOG_COLORIZE_AUTO, false, LOG_FACILITY_DAEMON, LOG_CLASS_WARNING);
 
     LOG_INFO("%s", WBG_VERSION);
+
+    char* image_name = next_file(&current, image_dir_path);
+    image_path = malloc(strlen(image_dir_path) + strlen(image_name) + 1);
+    strcpy(image_path, image_dir_path);
+    strcat(image_path, image_name);
 
     fp = fopen(image_path, "rb");
     if (fp == NULL) {
@@ -691,6 +699,8 @@ out:
         wl_registry_destroy(registry);
     if (display != NULL)
         wl_display_disconnect(display);
+    if (image_path != NULL)
+        free(image_path);
 #if defined(WBG_HAVE_SVG)
     svg_free();
 #endif

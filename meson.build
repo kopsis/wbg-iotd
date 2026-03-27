@@ -63,6 +63,7 @@ executable(
     'stride.h',
     'wbg-features.h',
     'iotd.c', 'iotd.h',
+    'file.c', 'file.h',
     image_format_sources,
     wl_proto_src + wl_proto_headers, 
     dependencies: [curl, cjson, pixman, jpg, wayland_client, tllist],
