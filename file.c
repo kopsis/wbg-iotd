@@ -15,6 +15,31 @@ struct FileName {
     struct FileName* next;
 };
 
+bool include(char* const name, char** suffix)
+{
+    bool match = false;
+    int i = 0;
+    int n = 0;
+    int m = strlen(name);
+    char* start = NULL;
+    while (suffix[i] != NULL ) {
+        n = strlen(suffix[i]);
+        /* empty suffix or longer than name, skip */
+        if (n == 0 || (m - n) < 1) {
+            continue;
+        }
+        start = name + m - n
+        if (strncasecmp(start, suffix[i], n) == 0) {
+            LOG_DBG("%s matched %s", name, suffix[i]);
+            match = true;
+            break;
+        }
+        i++;
+    }
+
+    return match;
+}
+
 int descending(const FTSENT **a, const FTSENT **b)
 {
     if ((*a)->fts_statp->st_ctime < (*b)->fts_statp->st_ctime) return 1;
