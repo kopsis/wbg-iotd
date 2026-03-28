@@ -123,7 +123,6 @@ load_image(void)
     return image;
 }
 
-
 static void
 render(struct output *output)
 {
@@ -190,6 +189,14 @@ out:
     if (is_svg)
         svg_free();
 #endif
+}
+
+static void
+rerender(void)
+{
+    tll_foreach(outputs, it) {
+        render(&it->item);
+    }
 }
 
 static void
@@ -635,6 +642,7 @@ main(int argc, char *const *argv)
     sigaddset(&mask, SIGINT);
     sigaddset(&mask, SIGQUIT);
     sigaddset(&mask, SIGUSR1);
+    sigaddset(&mask, SIGUSR2);
 
     sigprocmask(SIG_BLOCK, &mask, NULL);
 
@@ -664,9 +672,10 @@ main(int argc, char *const *argv)
         if (ret == 0) {
             if (newday()) {
                 LOG_INFO("Fetch new wallpaper");
-                if (iotd_get(SVC_BING, WP_DIR) == 0) {
+                if (iotd_get(SVC_BING, image_dir_path) == 0) {
                     LOG_INFO("Got wallpaper");
                     setday();
+                    rerender();
                 }
             }
             continue;
@@ -708,6 +717,17 @@ main(int argc, char *const *argv)
                         exit_code = EXIT_FAILURE;
                         goto out;
                     }
+                    rerender();
+                    continue;
+                case SIGUSR2:
+                    LOG_INFO("SIGUSR2 received");
+                    open_prev();
+                    if (fp == NULL) {
+                        LOG_ERRNO("%s: failed to open", image_path);
+                        exit_code = EXIT_FAILURE;
+                        goto out;
+                    }
+                    rerender();
                     continue;
                 case SIGINT:
                 case SIGQUIT:

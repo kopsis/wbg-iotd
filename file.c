@@ -133,11 +133,13 @@ next_file(int* const current, char* path, char* filter[])
         return NULL;
     }
 
-    if (*current >= numfiles || *current < 0) {
+    LOG_DBG("Current %d of %d", *current, numfiles);
+    if (*current < 0) {
         *current = 0;
     }
     else {
         *current = *current + 1;
+        if (*current >= numfiles) *current = 0;
     }
 
     struct FileName* curfile = files;
@@ -180,6 +182,7 @@ prev_file(int* const current, char* path, char* filter[])
         return NULL;
     }
 
+    LOG_DBG("Current %d of %d", *current, numfiles);
     if (*current == 0) {
         *current = numfiles - 1;
     }
@@ -187,14 +190,19 @@ prev_file(int* const current, char* path, char* filter[])
         *current = *current - 1;
     }
 
+    struct FileName* curfile = files;
+    for (int j = 0; j < *current; j++) {
+        curfile = curfile->next;
+    }
+
     LOG_DBG("Current file: %d", *current);
-    LOG_DBG("Current file name: %s", files[*current].name);
-    char* name = malloc(strlen(files[*current].name));
+    LOG_DBG("Current file name: %s", curfile->name);
+    char* name = malloc(strlen(curfile->name) + 1);
     if (name == NULL) {
         LOG_ERR("Failed allocating memory for file name");
     }
     else {
-        strcpy(name, files[*current].name);
+        strcpy(name, curfile->name);
     }
 
     LOG_DBG("Freeing filename list");
