@@ -87,6 +87,11 @@ static bool stretch = false;
 /* Last image fetch datetime */
 static struct tm image_dt = { .tm_year = 0, .tm_yday = 0 };
 
+static char* filter[] = {
+    ".jpg",
+    ".jpeg"
+};
+
 static pixman_image_t *
 load_image(void)
 {
@@ -500,6 +505,32 @@ setday(void)
     }
 }
 
+void
+open_next(void)
+{
+    if (fp != NULL) fclose(fp);
+
+    char* image_name = next_file(&current, image_dir_path, filter);
+    image_path = malloc(strlen(image_dir_path) + strlen(image_name) + 1);
+    strcpy(image_path, image_dir_path);
+    strcat(image_path, image_name);
+
+    fp = fopen(image_path, "rb");
+}
+
+void
+open_prev(void)
+{
+    if (fp != NULL) fclose(fp);
+
+    char* image_name = prev_file(&current, image_dir_path, filter);
+    image_path = malloc(strlen(image_dir_path) + strlen(image_name) + 1);
+    strcpy(image_path, image_dir_path);
+    strcat(image_path, image_name);
+
+    fp = fopen(image_path, "rb");
+}
+
 int
 main(int argc, char *const *argv)
 {
@@ -551,12 +582,7 @@ main(int argc, char *const *argv)
 
     LOG_INFO("%s", WBG_VERSION);
 
-    char* image_name = next_file(&current, image_dir_path);
-    image_path = malloc(strlen(image_dir_path) + strlen(image_name) + 1);
-    strcpy(image_path, image_dir_path);
-    strcat(image_path, image_name);
-
-    fp = fopen(image_path, "rb");
+    open_next();
     if (fp == NULL) {
         LOG_ERRNO("%s: failed to open", image_path);
         fprintf(stderr, "\nUsage: %s [-s|--stretch] <image_path>\n", argv[0]);
@@ -608,6 +634,7 @@ main(int argc, char *const *argv)
     sigemptyset(&mask);
     sigaddset(&mask, SIGINT);
     sigaddset(&mask, SIGQUIT);
+    sigaddset(&mask, SIGUSR1);
 
     sigprocmask(SIG_BLOCK, &mask, NULL);
 
@@ -672,11 +699,25 @@ main(int argc, char *const *argv)
             }
 
             assert(count == sizeof(info));
-            assert(info.ssi_signo == SIGINT || info.ssi_signo == SIGQUIT);
-
-            LOG_INFO("goodbye");
-            exit_code = EXIT_SUCCESS;
-            break;
+            switch (info.ssi_signo) {
+                case SIGUSR1:
+                    LOG_INFO("SIGUSR1 received");
+                    open_next();
+                    if (fp == NULL) {
+                        LOG_ERRNO("%s: failed to open", image_path);
+                        exit_code = EXIT_FAILURE;
+                        goto out;
+                    }
+                    continue;
+                case SIGINT:
+                case SIGQUIT:
+                    LOG_INFO("goodbye");
+                    exit_code = EXIT_SUCCESS;
+                    goto out;
+                default:
+                    assert(false);
+                    goto out;
+            }
         }
     }
 
