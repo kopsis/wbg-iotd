@@ -675,6 +675,8 @@ main(int argc, char *const *argv)
                 if (iotd_get(SVC_BING, image_dir_path) == 0) {
                     LOG_INFO("Got wallpaper");
                     setday();
+                    current = -1;
+                    open_next();
                     rerender();
                 }
             }

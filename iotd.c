@@ -191,6 +191,8 @@ int
 bing_iotd_get(const char *dir)
 {
     struct MemoryStruct chunk;
+    char* url = NULL;
+    char* urlbase = NULL;
 
     chunk.memory = malloc(1);
     chunk.size = 0;
@@ -205,8 +207,6 @@ bing_iotd_get(const char *dir)
     result = bing_get_info(&chunk);
     if (result) goto done;
 
-    char* url = NULL;
-    char* urlbase = NULL;
     LOG_DBG("Calling bing_extract_info()");
     result = bing_extract_info(&chunk, &url, &urlbase);
     if (result) goto done;
