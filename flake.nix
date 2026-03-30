@@ -1,5 +1,5 @@
 {
-  description = "C Template";
+  description = "Wayland wallpaper tool with IOTD support.";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
@@ -20,7 +20,7 @@
     flake-utils.lib.eachDefaultSystem (system:
     let
       pkgs = nixpkgs.legacyPackages.${system};
-      pname = "wbg"; #package name
+      pname = "wbg-iotd"; #package name
       version = "1.3.0";
       src = ./.;
       buildInputs = with pkgs; [
@@ -74,7 +74,7 @@
         inherit buildInputs nativeBuildInputs pname version src;
         NIX_CFLAGS_COMPILE = "-O1 -DWBG_VERSION=\"${version}\"";
         installPhase = ''
-          install -m755 -D ./wbg $out/bin/wbg
+          install -m755 -D ./wbg-iotd $out/bin/wbg-iotd
         '';
       };
     });

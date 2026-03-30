@@ -1,4 +1,4 @@
-project('wbg', 'c',
+project('wbg-iotd', 'c',
         version: '1.3.0',
         license: 'MIT',
         meson_version: '>=0.58.0',
@@ -56,7 +56,7 @@ endforeach
 image_format_sources = ['jpg.c', 'jpg.h']
 
 executable(
-    'wbg',
+    'wbg-iotd',
     'main.c',
     'log.c', 'log.h',
     'shm.c', 'shm.h',
