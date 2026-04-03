@@ -40,7 +40,7 @@
         wayland-scanner
       ];
     in
-    {
+    rec {
       devShells.default = pkgs.mkShell {
         inherit buildInputs nativeBuildInputs;
 
@@ -68,7 +68,8 @@
         '';
       };
 
-      overlays.default = final: prev: {
+      overlay = overlays.default;
+      overlays.default = final: _: {
         wbg-iotd = final.stdenv.mkDerivation {
           inherit buildInputs nativeBuildInputs pname version src;
           NIX_CFLAGS_COMPILE = "-O1 -DWBG_VERSION=\"${version}\"";
@@ -78,5 +79,6 @@
         };
       };
 
+      nixosModules.wbg-iotd = nixpkgs.lib.modules.importApply ./modules/wbg-iotd.nix { inherit self; };
     });
 }
