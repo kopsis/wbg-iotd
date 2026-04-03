@@ -79,6 +79,6 @@
         };
       };
 
-      nixosModules.wbg-iotd = nixpkgs.lib.modules.importApply ./modules/wbg-iotd.nix { inherit self; };
+      nixosModules.wbg-iotd = ./modules/wbg-iotd.nix;
     });
 }
