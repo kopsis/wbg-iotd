@@ -32,25 +32,15 @@
         tllist
         wayland
         wayland-protocols
-        # Tipp: you can use `nix-locate foo.h` to find the package that provides a header file, see https://github.com/nix-community/nix-index
       ];
       nativeBuildInputs = with pkgs; [
         # add build dependencies here
-        ## For mesonbuild:
         meson ninja
-        ## For cmake:
-        #cmake
-        ## For autotools:
-        # autoconf-archive
-        # autoreconfHook
         pkg-config
-        # clangd language server.
-        # Also start your IDE/editor from the shell provided by `nix develop` as the wrapped clangd from clang-tools needs environment variables set by the shell
-        #clang-tools
         wayland-scanner
       ];
     in
-    {
+    rec {
       devShells.default = pkgs.mkShell {
         inherit buildInputs nativeBuildInputs;
 
@@ -73,9 +63,17 @@
       packages.default = pkgs.stdenv.mkDerivation {
         inherit buildInputs nativeBuildInputs pname version src;
         NIX_CFLAGS_COMPILE = "-O1 -DWBG_VERSION=\"${version}\"";
-        installPhase = ''
-          install -m755 -D ./wbg-iotd $out/bin/wbg-iotd
-        '';
       };
-    });
+
+      overlay = overlays.default;
+      overlays.default = final: _: {
+        wbg-iotd = final.stdenv.mkDerivation {
+          inherit buildInputs nativeBuildInputs pname version src;
+          NIX_CFLAGS_COMPILE = "-O1 -DWBG_VERSION=\"${version}\"";
+        };
+      };
+
+    }) // { nixosModules.wbg-iotd-home = ./modules/wbg-iotd-home.nix; };
 }
+
+# vim: sw=2:et

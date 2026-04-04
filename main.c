@@ -518,11 +518,16 @@ open_next(void)
     if (fp != NULL) fclose(fp);
 
     char* image_name = next_file(&current, image_dir_path, filter);
-    image_path = malloc(strlen(image_dir_path) + strlen(image_name) + 1);
-    strcpy(image_path, image_dir_path);
-    strcat(image_path, image_name);
+    if (image_name != NULL) {
+        image_path = malloc(strlen(image_dir_path) + strlen(image_name) + 1);
+        strcpy(image_path, image_dir_path);
+        strcat(image_path, image_name);
 
-    fp = fopen(image_path, "rb");
+        fp = fopen(image_path, "rb");
+    }
+    else {
+        LOG_WARN("No images found in %s", image_dir_path);
+    }
 }
 
 void
