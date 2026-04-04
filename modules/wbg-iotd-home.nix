@@ -8,6 +8,7 @@ let
   cfg = config.services.wbg-iotd;
   wbg-iotd-bin = lib.getExe wbg-iotd;
 in
+{
   options.services.wbg-iotd.enable = mkEnableOption "wbg-iotd";
 
   systemd.user.services = lib.mkIf cfg.enable {
