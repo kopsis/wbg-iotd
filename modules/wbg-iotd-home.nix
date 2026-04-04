@@ -8,7 +8,7 @@
 with lib;
 let
   cfg = config.services.wbg-iotd;
-  wbg-iotd-bin = lib.getExe config.wbg-iotd.package;
+  wbg-iotd-bin = lib.getExe wbg-iotd;
 in
   options.services.wbg-iotd.enable = mkEnableOption "wbg-iotd";
 
