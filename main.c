@@ -546,6 +546,44 @@ open_prev(void)
     fp = fopen(image_path, "rb");
 }
 
+void
+send_sig(int n)
+{
+    int pid;
+
+    if (pid_path != NULL) {
+        LOG_INFO("Reading PID from %s", pid_path);
+        FILE* pidfile_fd = fopen(pid_path, "r");
+        if (pidfile_fd != NULL) {
+            int result = fscanf(pidfile_fd, "%d", &pid);
+            fclose(pidfile_fd);
+            if (result == 1) {
+                switch (n) {
+                case 1:
+                    LOG_INFO("Sending SIGUSR1 to %d", pid);
+                    kill(pid, SIGUSR1);
+                    break;
+                case 2:
+                    LOG_INFO("Sending SIGUSR2 to %d", pid);
+                    kill(pid, SIGUSR2);
+                    break;
+                default:
+                    break;
+                }
+            }
+            else {
+                LOG_ERR("Invalid PID file.");
+            }
+        }
+        else {
+            LOG_ERRNO("Can't open PID file");
+        }
+    }
+    else {
+        LOG_ERR("No PID file path defined.");
+    }
+}
+
 int
 main(int argc, char *const *argv)
 {
@@ -554,14 +592,25 @@ main(int argc, char *const *argv)
     const struct option longopts[] = {
         {"stretch", no_argument, 0, 's'},
         {"version", no_argument, 0, 'v'},
+        {"next",    no_argument, 0, 'n'},
+        {"prev",    no_argument, 0, 'p'},
         {"help",    no_argument, 0, 'h'},
         {NULL,      no_argument, 0, 0},
     };
 
     pid_path = NULL;
+    char* xdg_runtime_dir = getenv("XDG_RUNTIME_DIR");
+    if (xdg_runtime_dir != NULL) {
+        pid_path = malloc(strlen(xdg_runtime_dir) + strlen(PID_FILE) + 1);
+        strcpy(pid_path, xdg_runtime_dir);
+        strcat(pid_path, PID_FILE);
+    }
+    else {
+        LOG_WARN("No XDG_RUNTIME_DIR env variable defined.");
+    }
 
     while (true) {
-        int c = getopt_long(argc, argv, ":svh", longopts, NULL);
+        int c = getopt_long(argc, argv, ":svnph", longopts, NULL);
         if (c < 0)
             break;
 
@@ -575,6 +624,14 @@ main(int argc, char *const *argv)
 
         case 'h':
             usage(progname);
+            return EXIT_SUCCESS;
+
+        case 'n':
+            send_sig(1);
+            return EXIT_SUCCESS;
+
+        case 'p':
+            send_sig(2);
             return EXIT_SUCCESS;
 
         case ':':
@@ -595,11 +652,7 @@ main(int argc, char *const *argv)
     image_dir_path = argv[argc - 1];
     stretch = (argc == 3);
 
-    char* xdg_runtime_dir = getenv("XDG_RUNTIME_DIR");
-    if (xdg_runtime_dir != NULL) {
-        pid_path = malloc(strlen(xdg_runtime_dir) + strlen(PID_FILE) + 1);
-        strcpy(pid_path, xdg_runtime_dir);
-        strcat(pid_path, PID_FILE);
+    if (pid_path != NULL) {
         LOG_INFO("Writing PID to %s", pid_path);
         FILE* pidfile_fd = fopen(pid_path, "w");
         if (pidfile_fd != NULL) {
@@ -609,9 +662,6 @@ main(int argc, char *const *argv)
         else {
             LOG_ERRNO("Can't open PID file");
         }
-    }
-    else {
-        LOG_WARN("No XDG_RUNTIME_DIR env variable defined.");
     }
 
     log_init(LOG_COLORIZE_AUTO, false, LOG_FACILITY_DAEMON, LOG_CLASS_WARNING);
