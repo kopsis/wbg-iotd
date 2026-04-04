@@ -33,7 +33,7 @@ in
       };
       Install = {
                 #WantedBy = [ "graphical-session.target" ];
-        WantedBy = [ lib.asserts.assertMsg ("foo" == "bar") "Service enabled"; "" ];
+        WantedBy = [ lib.asserts.assertMsg ("foo" == "bar") "Service enabled" ];
       };
     };
   };
