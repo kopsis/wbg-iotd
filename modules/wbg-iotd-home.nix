@@ -1,11 +1,9 @@
-{
-  config,
-  options,
-  lib,
-  pkgs,
-  ...
-}:
-with lib;
+{ config
+,  options
+,  lib
+,  pkgs
+,  ... }:
+
 let
   cfg = config.services.wbg-iotd;
   wbg-iotd-bin = lib.getExe wbg-iotd;
