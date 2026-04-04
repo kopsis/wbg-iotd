@@ -14,8 +14,12 @@ in
     package = lib.mkPackageOption pkgs "wbg-iotd" { };
   };
 
-  config.systemd.user.services = lib.mkIf cfg.enable {
-    wbg-iotd = {
+  config = lib.mkIf cfg.enable {
+    home.packages = [
+      cfg.package
+    ];
+
+    systemd.user.services.wbg-iotd = {
       Unit = {
         Description = "Wallpaper image-of-the-day manager.";
         PartOf = [ "graphical-session.target" ];
