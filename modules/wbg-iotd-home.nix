@@ -7,6 +7,10 @@
 let
   cfg = config.services.wbg-iotd;
   wbg-iotd-bin = lib.getExe' cfg.package "wbg-iotd";
+  eval = f: if isFunction f then eval (f null) else f;
+  tmpRule = type: name: mode: user: group: age: {
+    "${name}"."${type}" = lib.filterAttrs (k: v: v != null) { inherit mode user group age; };
+  };
 in
 {
   options.services.wbg-iotd = {
@@ -24,6 +28,7 @@ in
         Description = "Wallpaper image-of-the-day manager.";
         PartOf = [ "graphical-session.target" ];
         After = [ "graphical-session.target" ];
+        ConditionEnvironment = "WAYLAND_DISPLAY";
       };
       Service = {
         Type = "exec";
@@ -35,5 +40,8 @@ in
         WantedBy = [ "graphical-session.target" ];
       };
     };
+
+    systemd.user.tmpfiles.settings."wbg-iotd".rules =
+      ( eval (tmpRule "d" "~/.local/share/wallpaper" null null null "30 days"));
   };
 }
