@@ -28,8 +28,7 @@ in
       Service = {
         Type = "exec";
         ExecStart = "${wbg-iotd-bin}";
-        Restart = assert lib.asserts.assertMsg ("foo" == "bar") "Service enabled"; "always";
-        #Restart = "always";
+        Restart = "always";
         RestartSec = 10;
       };
       Install = {
