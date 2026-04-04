@@ -10,17 +10,9 @@ let
   cfg = config.services.wbg-iotd;
   wbg-iotd-bin = lib.getExe config.wbg-iotd.package;
 in
-  options.services.wbg-iotd = {
-    enable = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        Enable the wallpaper image-of-the-day service.
-      '';
-    };
-  };
+  options.services.wbg-iotd.enable = mkEnableOption "wbg-iotd";
 
-  systemd.user.services = lib.mkIf cfg.services.wbg-iotd.enable {
+  systemd.user.services = lib.mkIf cfg.enable {
     wbg-iotd = {
       Unit = {
         Description = "Wallpaper image-of-the-day manager.";
