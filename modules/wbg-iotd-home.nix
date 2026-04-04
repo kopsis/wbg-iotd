@@ -7,7 +7,7 @@
 let
   cfg = config.services.wbg-iotd;
   wbg-iotd-bin = lib.getExe' cfg.package "wbg-iotd";
-  eval = f: if isFunction f then eval (f null) else f;
+  eval = f: if lib.isFunction f then eval (f null) else f;
   tmpRule = type: name: mode: user: group: age: {
     "${name}"."${type}" = lib.filterAttrs (k: v: v != null) { inherit mode user group age; };
   };
