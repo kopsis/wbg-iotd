@@ -35,6 +35,7 @@ in
         ExecStart = "${wbg-iotd-bin} -s \${XDG_DATA_HOME}/wallpaper";
         Restart = "always";
         RestartSec = 10;
+        PIDFile = "wbg-iotd";
       };
       Install = {
         WantedBy = [ "graphical-session.target" ];
