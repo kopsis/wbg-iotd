@@ -10,8 +10,8 @@ let
 in
 {
   options.services.wbg-iotd = {
-    enable = mkEnableOption "wbg-iotd";
-    package = mkPackageOption pkgs "wbg-iotd" { };
+    enable = lib.mkEnableOption "wbg-iotd";
+    package = lib.mkPackageOption pkgs "wbg-iotd" { };
   };
 
   systemd.user.services = lib.mkIf cfg.enable {
