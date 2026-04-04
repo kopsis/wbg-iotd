@@ -6,10 +6,13 @@
 
 let
   cfg = config.services.wbg-iotd;
-  wbg-iotd-bin = lib.getExe wbg-iotd;
+  wbg-iotd-bin = lib.getExe cfg.package;
 in
 {
-  options.services.wbg-iotd.enable = mkEnableOption "wbg-iotd";
+  options.services.wbg-iotd = {
+    enable = mkEnableOption "wbg-iotd";
+    package = mkPackageOption pkgs "wbg-iotd" { };
+  };
 
   systemd.user.services = lib.mkIf cfg.enable {
     wbg-iotd = {
