@@ -63,9 +63,9 @@
       packages.default = pkgs.stdenv.mkDerivation {
         inherit buildInputs nativeBuildInputs pname version src;
         NIX_CFLAGS_COMPILE = "-O1 -DWBG_VERSION=\"${version}\"";
-        installPhase = ''
-          install -m755 -D ./wbg-iotd $out/bin/wbg-iotd
-        '';
+        #installPhase = ''
+        #  install -m755 -D ./wbg-iotd $out/bin/wbg-iotd
+        #'';
       };
 
       overlay = overlays.default;
@@ -81,3 +81,5 @@
 
     }) // { nixosModules.wbg-iotd-home = ./modules/wbg-iotd-home.nix; };
 }
+
+# vim: sw=2:et
