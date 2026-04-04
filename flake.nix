@@ -79,5 +79,5 @@
         };
       };
 
-    }) // { nixosModules.wbg-iotd = ./modules/wbg-iotd.nix; };
+    }) // { nixosModules.wbg-iotd-home = ./modules/wbg-iotd-home.nix; };
 }
