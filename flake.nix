@@ -16,7 +16,6 @@
     , flake-utils
     , ...
     }:
-    {
     # For more information about the C/C++ infrastructure in nixpkgs: https://nixos.wiki/wiki/C
     flake-utils.lib.eachDefaultSystem (system:
     let
@@ -80,8 +79,5 @@
         };
       };
 
-    });
-
-    nixosModules.wbg-iotd = ./modules/wbg-iotd.nix;
-    };
+    }) // nixosModules.wbg-iotd = ./modules/wbg-iotd.nix;
 }
