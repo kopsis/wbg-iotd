@@ -46,7 +46,7 @@
 #endif
 
 #define WP_DIR "/tmp/"
-#define PID_FILE "wbg-iotd.pid"
+#define PID_FILE "/wbg-iotd.pid"
 
 /* Source image */
 static char *image_dir_path = NULL;
