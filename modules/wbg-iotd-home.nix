@@ -28,12 +28,12 @@ in
       Service = {
         Type = "exec";
         ExecStart = "${wbg-iotd-bin}";
-        Restart = "always";
+        Restart = assert lib.asserts.assertMsg ("foo" == "bar") "Service enabled"; "always";
+        #Restart = "always";
         RestartSec = 10;
       };
       Install = {
-                #WantedBy = [ "graphical-session.target" ];
-        WantedBy = [ assert lib.asserts.assertMsg ("foo" == "bar") "Service enabled"; "graphical-session.target" ];
+        WantedBy = [ "graphical-session.target" ];
       };
     };
   };
