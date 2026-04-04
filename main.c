@@ -594,17 +594,24 @@ main(int argc, char *const *argv)
 
     image_dir_path = argv[argc - 1];
     stretch = (argc == 3);
-    char* xdg_runtime_dir = getenv("XDG_RUNTIME_DIR");
 
+    char* xdg_runtime_dir = getenv("XDG_RUNTIME_DIR");
     if (xdg_runtime_dir != NULL) {
         pid_path = malloc(strlen(xdg_runtime_dir) + strlen(PID_FILE) + 1);
         strcpy(pid_path, xdg_runtime_dir);
         strcat(pid_path, PID_FILE);
+        LOG_INFO("Writing PID to %s", pid_path);
         FILE* pidfile_fd = fopen(pid_path, "w");
         if (pidfile_fd != NULL) {
             fprintf(pidfile_fd, "%d", getpid());
             fclose(pidfile_fd);
         }
+        else {
+            LOG_ERRNO("Can't open PID file");
+        }
+    }
+    else {
+        LOG_WARN("No XDG_RUNTIME_DIR env variable defined.");
     }
 
     log_init(LOG_COLORIZE_AUTO, false, LOG_FACILITY_DAEMON, LOG_CLASS_WARNING);
