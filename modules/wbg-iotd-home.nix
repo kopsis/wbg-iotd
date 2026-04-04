@@ -41,7 +41,8 @@ in
       };
     };
 
-    systemd.user.tmpfiles.settings."wbg-iotd".rules =
-      ( eval (tmpRule "d" "~/.local/share/wallpaper" null null null "30 days"));
+    systemd.user.tmpfiles.rules = [
+      "d %h/.local/share/wallpaper - - - 30d"
+    ];
   };
 }
