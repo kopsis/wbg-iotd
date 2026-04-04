@@ -6,7 +6,7 @@
 
 let
   cfg = config.services.wbg-iotd;
-  wbg-iotd-bin = lib.getExe cfg.package;
+  wbg-iotd-bin = lib.getExe cfg.package "wbg-iotd";
 in
 {
   options.services.wbg-iotd = {
