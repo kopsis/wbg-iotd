@@ -46,6 +46,7 @@
 #endif
 
 #define WP_DIR "/tmp/"
+#define PID_FILE "wbg-iotd.pid"
 
 /* Source image */
 static char *image_dir_path = NULL;
@@ -91,6 +92,8 @@ static char* filter[] = {
     ".jpg",
     ".jpeg"
 };
+
+static char* pid_path;
 
 static pixman_image_t *
 load_image(void)
@@ -555,6 +558,8 @@ main(int argc, char *const *argv)
         {NULL,      no_argument, 0, 0},
     };
 
+    pid_path = NULL;
+
     while (true) {
         int c = getopt_long(argc, argv, ":svh", longopts, NULL);
         if (c < 0)
@@ -589,6 +594,18 @@ main(int argc, char *const *argv)
 
     image_dir_path = argv[argc - 1];
     stretch = (argc == 3);
+    char* xdg_runtime_dir = getenv("XDG_RUNTIME_DIR");
+
+    if (xdg_runtime_dir != NULL) {
+        pid_path = malloc(strlen(xdg_runtime_dir) + strlen(PID_FILE) + 1);
+        strcpy(pid_path, xdg_runtime_dir);
+        strcat(pid_path, PID_FILE);
+        FILE* pidfile_fd = fopen(pid_path, "w");
+        if (pidfile_fd != NULL) {
+            fprintf(pidfile_fd, "%d", getpid());
+            fclose(pidfile_fd);
+        }
+    }
 
     log_init(LOG_COLORIZE_AUTO, false, LOG_FACILITY_DAEMON, LOG_CLASS_WARNING);
 
@@ -774,5 +791,9 @@ out:
 #endif
     log_deinit();
     fclose(fp);
+    if (pid_path != NULL) {
+        unlink(pid_path);
+        free(pid_path);
+    }
     return exit_code;
 }
