@@ -32,7 +32,8 @@ in
         RestartSec = 10;
       };
       Install = {
-        WantedBy = [ "graphical-session.target" ];
+                #WantedBy = [ "graphical-session.target" ];
+        WantedBy = [ lib.asserts.assertMsg ("foo" == "bar") "Service enabled"; "" ];
       };
     };
   };
