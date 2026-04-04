@@ -32,7 +32,7 @@ in
       };
       Service = {
         Type = "exec";
-        ExecStart = "${wbg-iotd-bin}";
+        ExecStart = "${wbg-iotd-bin} -s \${XDG_DATA_HOME}/.local/share/wallpaper";
         Restart = "always";
         RestartSec = 10;
       };
